@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "moduleResolution": "bundler",
+    "strict": true,
+    "jsx": "preserve",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "declaration": true,
+    "declarationMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "@open-chat/chat-core": ["./packages/chat-core/src"],
+      "@open-chat/chat-sdk": ["./packages/chat-sdk/src"],
+      "@open-chat/chat-ui": ["./packages/chat-ui/src"],
+      "@open-chat/chat-plugins": ["./packages/chat-plugins/src"],
+      "@open-chat/chat-utils": ["./packages/chat-utils/src"]
+    }
+  }
+}

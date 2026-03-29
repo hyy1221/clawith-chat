@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+dist/
+*.local
+
+# Logs
+*.log
+vite-mobile.log
+.runtime-logs/
+
+# Editor
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Claude Code
+.claude/
+.codex/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment (may contain secrets)
+.env
+.env.local
+.env.*.local
+openchat.config.js

@@ -1,0 +1,109 @@
+import { ChatPlugin, Message } from '../types'
+import type { ChatEngine } from '../engine/ChatEngine'
+
+/**
+ * 插件管理器
+ */
+export class PluginManager {
+  private plugins: ChatPlugin[] = []
+  private engine: ChatEngine
+
+  constructor(engine: ChatEngine) {
+    this.engine = engine
+  }
+
+  /**
+   * 安装插件
+   */
+  use(plugin: ChatPlugin): void {
+    // 调用插件的 install 钩子
+    if (plugin.install) {
+      plugin.install(this.engine)
+    }
+
+    this.plugins.push(plugin)
+    console.log(`[PluginManager] Plugin "${plugin.name}" installed`)
+  }
+
+  /**
+   * 卸载插件
+   */
+  unuse(name: string): void {
+    const index = this.plugins.findIndex(p => p.name === name)
+    if (index !== -1) {
+      const plugin = this.plugins[index]
+      if (plugin.destroy) {
+        plugin.destroy()
+      }
+      this.plugins.splice(index, 1)
+      console.log(`[PluginManager] Plugin "${name}" uninstalled`)
+    }
+  }
+
+  /**
+   * 获取所有插件
+   */
+  getPlugins(): ChatPlugin[] {
+    return [...this.plugins]
+  }
+
+  /**
+   * 获取指定插件
+   */
+  getPlugin(name: string): ChatPlugin | undefined {
+    return this.plugins.find(p => p.name === name)
+  }
+
+  /**
+   * 执行 beforeSend 钩子
+   */
+  async runBeforeSend(msg: Message): Promise<Message> {
+    let result = msg
+
+    for (const plugin of this.plugins) {
+      if (plugin.beforeSend) {
+        try {
+          result = await plugin.beforeSend(result)
+        } catch (error) {
+          console.error(`[PluginManager] Plugin "${plugin.name}" beforeSend error:`, error)
+          throw error
+        }
+      }
+    }
+
+    return result
+  }
+
+  /**
+   * 执行 afterReceive 钩子
+   */
+  async runAfterReceive(msg: Message): Promise<Message> {
+    let result = msg
+
+    for (const plugin of this.plugins) {
+      if (plugin.afterReceive) {
+        try {
+          result = await plugin.afterReceive(result)
+        } catch (error) {
+          console.error(`[PluginManager] Plugin "${plugin.name}" afterReceive error:`, error)
+        }
+      }
+    }
+
+    return result
+  }
+
+  /**
+   * 销毁所有插件
+   */
+  destroy(): void {
+    for (const plugin of this.plugins) {
+      if (plugin.destroy) {
+        plugin.destroy()
+      }
+    }
+    this.plugins = []
+  }
+}
+
+export default PluginManager

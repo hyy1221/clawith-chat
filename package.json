@@ -1,0 +1,28 @@
+{
+  "name": "open-chat",
+  "version": "1.0.0",
+  "private": true,
+  "description": "可嵌入网页的聊天插件系统 + SDK + 插件平台",
+  "workspaces": [
+    "packages/*",
+    "apps/*",
+    "server/*"
+  ],
+  "scripts": {
+    "dev": "pnpm --filter demo-web dev",
+    "dev:server": "pnpm --filter chat-server dev",
+    "build": "pnpm -r build",
+    "build:core": "pnpm --filter chat-core build",
+    "build:sdk": "pnpm --filter chat-sdk build",
+    "build:ui": "pnpm --filter chat-ui build"
+  },
+  "keywords": [
+    "chat",
+    "im",
+    "sdk",
+    "plugin",
+    "vue3"
+  ],
+  "author": "",
+  "license": "MIT"
+}

@@ -1,0 +1,385 @@
+/**
+ * OpenChat Theme System
+ *
+ * CSS Variables for theming with support for light/dark modes.
+ * Default theme is dark to match Clawith's Linear-style design.
+ */
+
+/* CSS Reset & Base */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Theme Variables */
+:root {
+  /* Dark Theme (Default) - Linear/Clawith Style */
+  --oc-bg-primary: #0f0f12;
+  --oc-bg-secondary: #18181c;
+  --oc-bg-tertiary: #1f1f24;
+  --oc-bg-elevated: #27272c;
+  --oc-bg-overlay: rgba(0, 0, 0, 0.5);
+
+  --oc-text-primary: #fafafa;
+  --oc-text-secondary: #a1a1aa;
+  --oc-text-tertiary: #71717a;
+  --oc-text-muted: #52525b;
+
+  --oc-border-default: rgba(255, 255, 255, 0.08);
+  --oc-border-subtle: rgba(255, 255, 255, 0.05);
+  --oc-border-strong: rgba(255, 255, 255, 0.15);
+
+  --oc-accent-primary: #6366f1;
+  --oc-accent-primary-hover: #818cf8;
+  --oc-accent-secondary: #8b5cf6;
+  --oc-accent-success: #22c55e;
+  --oc-accent-warning: #f59e0b;
+  --oc-accent-danger: #ef4444;
+  --oc-accent-info: #3b82f6;
+
+  --oc-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --oc-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --oc-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --oc-shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.6);
+
+  --oc-radius-sm: 6px;
+  --oc-radius-md: 10px;
+  --oc-radius-lg: 16px;
+  --oc-radius-xl: 24px;
+  --oc-radius-full: 9999px;
+
+  --oc-font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --oc-font-mono: 'SF Mono', 'Fira Code', Consolas, 'Liberation Mono', Menlo, monospace;
+
+  --oc-transition-fast: 150ms ease;
+  --oc-transition-normal: 200ms ease;
+  --oc-transition-slow: 300ms ease;
+
+  --oc-z-dropdown: 100;
+  --oc-z-modal: 200;
+  --oc-z-tooltip: 300;
+  --oc-z-toast: 400;
+
+  /* Presence Status Colors */
+  --oc-presence-online: #22c55e;
+  --oc-presence-away: #f59e0b;
+  --oc-presence-busy: #ef4444;
+  --oc-presence-offline: #71717a;
+
+  /* Message Bubble Colors */
+  --oc-bubble-self: linear-gradient(135deg, #1e1e24, #27272c);
+  --oc-bubble-other: rgba(255, 255, 255, 0.08);
+}
+
+/* Light Theme */
+[data-theme="light"] {
+  --oc-bg-primary: #ffffff;
+  --oc-bg-secondary: #fafafa;
+  --oc-bg-tertiary: #f4f4f5;
+  --oc-bg-elevated: #ffffff;
+  --oc-bg-overlay: rgba(0, 0, 0, 0.3);
+
+  --oc-text-primary: #18181b;
+  --oc-text-secondary: #52525b;
+  --oc-text-tertiary: #71717a;
+  --oc-text-muted: #a1a1aa;
+
+  --oc-border-default: rgba(0, 0, 0, 0.08);
+  --oc-border-subtle: rgba(0, 0, 0, 0.04);
+  --oc-border-strong: rgba(0, 0, 0, 0.15);
+
+  --oc-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --oc-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --oc-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --oc-shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.16);
+
+  --oc-bubble-self: linear-gradient(135deg, #6366f1, #8b5cf6);
+  --oc-bubble-other: rgba(0, 0, 0, 0.05);
+}
+
+/* Theme Application Classes */
+.oc-theme {
+  background: var(--oc-bg-primary);
+  color: var(--oc-text-primary);
+  font-family: var(--oc-font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Typography */
+.oc-text-xs { font-size: 11px; }
+.oc-text-sm { font-size: 12px; }
+.oc-text-base { font-size: 14px; }
+.oc-text-lg { font-size: 16px; }
+.oc-text-xl { font-size: 18px; }
+.oc-text-2xl { font-size: 20px; }
+.oc-text-3xl { font-size: 24px; }
+
+.oc-font-normal { font-weight: 400; }
+.oc-font-medium { font-weight: 500; }
+.oc-font-semibold { font-weight: 600; }
+.oc-font-bold { font-weight: 700; }
+
+/* Colors */
+.oc-text-primary { color: var(--oc-text-primary); }
+.oc-text-secondary { color: var(--oc-text-secondary); }
+.oc-text-muted { color: var(--oc-text-tertiary); }
+.oc-text-accent { color: var(--oc-accent-primary); }
+.oc-text-success { color: var(--oc-accent-success); }
+.oc-text-warning { color: var(--oc-accent-warning); }
+.oc-text-danger { color: var(--oc-accent-danger); }
+
+.oc-bg-primary { background: var(--oc-bg-primary); }
+.oc-bg-secondary { background: var(--oc-bg-secondary); }
+.oc-bg-elevated { background: var(--oc-bg-elevated); }
+
+/* Borders */
+.oc-border { border: 1px solid var(--oc-border-default); }
+.oc-border-subtle { border: 1px solid var(--oc-border-subtle); }
+.oc-border-strong { border: 1px solid var(--oc-border-strong); }
+
+/* Shadows */
+.oc-shadow-sm { box-shadow: var(--oc-shadow-sm); }
+.oc-shadow-md { box-shadow: var(--oc-shadow-md); }
+.oc-shadow-lg { box-shadow: var(--oc-shadow-lg); }
+.oc-shadow-xl { box-shadow: var(--oc-shadow-xl); }
+
+/* Border Radius */
+.oc-radius-sm { border-radius: var(--oc-radius-sm); }
+.oc-radius-md { border-radius: var(--oc-radius-md); }
+.oc-radius-lg { border-radius: var(--oc-radius-lg); }
+.oc-radius-xl { border-radius: var(--oc-radius-xl); }
+.oc-radius-full { border-radius: var(--oc-radius-full); }
+
+/* Spacing */
+.oc-space-1 { gap: 4px; }
+.oc-space-2 { gap: 8px; }
+.oc-space-3 { gap: 12px; }
+.oc-space-4 { gap: 16px; }
+.oc-space-5 { gap: 20px; }
+.oc-space-6 { gap: 24px; }
+
+/* Layout Utilities */
+.oc-flex { display: flex; }
+.oc-flex-col { flex-direction: column; }
+.oc-items-center { align-items: center; }
+.oc-items-start { align-items: flex-start; }
+.oc-items-end { align-items: flex-end; }
+.oc-justify-center { justify-content: center; }
+.oc-justify-between { justify-content: space-between; }
+.oc-justify-end { justify-content: flex-end; }
+.oc-flex-1 { flex: 1; }
+.oc-flex-shrink-0 { flex-shrink: 0; }
+
+/* Presence Indicator */
+.oc-presence {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.oc-presence--online { background: var(--oc-presence-online); }
+.oc-presence--away { background: var(--oc-presence-away); }
+.oc-presence--busy { background: var(--oc-presence-busy); }
+.oc-presence--offline { background: var(--oc-presence-offline); }
+
+/* Avatar */
+.oc-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--oc-radius-md);
+  background: var(--oc-bg-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--oc-text-secondary);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.oc-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.oc-avatar--sm { width: 24px; height: 24px; font-size: 11px; border-radius: var(--oc-radius-sm); }
+.oc-avatar--lg { width: 48px; height: 48px; font-size: 18px; border-radius: var(--oc-radius-lg); }
+.oc-avatar--xl { width: 64px; height: 64px; font-size: 24px; border-radius: var(--oc-radius-lg); }
+
+/* Badge */
+.oc-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 6px;
+  background: var(--oc-accent-danger);
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: var(--oc-radius-full);
+}
+
+/* Button Base */
+.oc-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: var(--oc-radius-md);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--oc-transition-fast);
+  outline: none;
+}
+
+.oc-btn:focus-visible {
+  box-shadow: 0 0 0 2px var(--oc-bg-primary), 0 0 0 4px var(--oc-accent-primary);
+}
+
+.oc-btn--primary {
+  background: var(--oc-accent-primary);
+  color: white;
+}
+
+.oc-btn--primary:hover {
+  background: var(--oc-accent-primary-hover);
+}
+
+.oc-btn--secondary {
+  background: var(--oc-bg-tertiary);
+  color: var(--oc-text-primary);
+}
+
+.oc-btn--secondary:hover {
+  background: var(--oc-bg-elevated);
+}
+
+.oc-btn--ghost {
+  background: transparent;
+  color: var(--oc-text-secondary);
+}
+
+.oc-btn--ghost:hover {
+  background: var(--oc-bg-tertiary);
+  color: var(--oc-text-primary);
+}
+
+.oc-btn--danger {
+  background: var(--oc-accent-danger);
+  color: white;
+}
+
+.oc-btn--danger:hover {
+  background: #dc2626;
+}
+
+.oc-btn--sm {
+  padding: 4px 10px;
+  font-size: 12px;
+}
+
+.oc-btn--lg {
+  padding: 12px 24px;
+  font-size: 16px;
+}
+
+/* Input Base */
+.oc-input {
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--oc-bg-secondary);
+  border: 1px solid var(--oc-border-default);
+  border-radius: var(--oc-radius-md);
+  color: var(--oc-text-primary);
+  font-size: 14px;
+  outline: none;
+  transition: border-color var(--oc-transition-fast);
+}
+
+.oc-input:focus {
+  border-color: var(--oc-accent-primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.oc-input::placeholder {
+  color: var(--oc-text-tertiary);
+}
+
+/* Scrollbar Styling */
+.oc-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--oc-border-strong) transparent;
+}
+
+.oc-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.oc-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.oc-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--oc-border-strong);
+  border-radius: var(--oc-radius-full);
+}
+
+.oc-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--oc-text-tertiary);
+}
+
+/* Animation Utilities */
+@keyframes oc-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes oc-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes oc-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes oc-slide-up {
+  from { transform: translateY(10px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes oc-slide-down {
+  from { transform: translateY(-10px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.oc-animate-spin { animation: oc-spin 1s linear infinite; }
+.oc-animate-pulse { animation: oc-pulse 2s ease-in-out infinite; }
+.oc-animate-fade-in { animation: oc-fade-in var(--oc-transition-normal) forwards; }
+.oc-animate-slide-up { animation: oc-slide-up var(--oc-transition-normal) forwards; }
+.oc-animate-slide-down { animation: oc-slide-down var(--oc-transition-normal) forwards; }
+
+/* Staggered Animation */
+.oc-stagger > *:nth-child(1) { animation-delay: 0ms; }
+.oc-stagger > *:nth-child(2) { animation-delay: 50ms; }
+.oc-stagger > *:nth-child(3) { animation-delay: 100ms; }
+.oc-stagger > *:nth-child(4) { animation-delay: 150ms; }
+.oc-stagger > *:nth-child(5) { animation-delay: 200ms; }
+.oc-stagger > *:nth-child(6) { animation-delay: 250ms; }
+.oc-stagger > *:nth-child(7) { animation-delay: 300ms; }
+.oc-stagger > *:nth-child(8) { animation-delay: 350ms; }
+.oc-stagger > *:nth-child(9) { animation-delay: 400ms; }
+.oc-stagger > *:nth-child(10) { animation-delay: 450ms; }
