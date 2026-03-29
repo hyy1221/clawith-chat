@@ -1,6 +1,15 @@
 <template>
   <main class="app-shell">
 
+    <!-- Offline Banner -->
+    <div v-if="isOffline && authed" class="offline-banner">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <path d="M7 1L1 7l3 3 3-3 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M1 7h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      离线模式 · 部分功能不可用
+    </div>
+
     <!-- Loading Skeleton -->
     <div v-if="!ready" class="skeleton-root">
       <SkeletonLoader />
@@ -242,15 +251,13 @@
             :disabled="isRecording || isTranscribing"
             @mousedown="startRecording" @mouseup="stopRecording" @mouseleave="stopRecording"
             @touchstart.prevent="startRecording" @touchend.prevent="stopRecording"
-            title="按住说话">
+            :title="isRecording ? `录音中 ${recordingDuration}s` : '按住说话'">
             <svg v-if="!isRecording && !isTranscribing" width="18" height="18" viewBox="0 0 18 18" fill="none">
               <circle cx="9" cy="7" r="3.5" stroke="currentColor" stroke-width="1.4"/>
               <path d="M5 9c0 2.2 1.8 4 4 4s4-1.8 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
               <path d="M9 13v2M7 15h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
             </svg>
-            <svg v-else-if="isRecording" width="18" height="18" viewBox="0 0 18 18" fill="none" class="recording-icon">
-              <circle cx="9" cy="9" r="6" fill="currentColor" opacity="0.9"/>
-            </svg>
+            <span v-else-if="isRecording" class="recording-count">{{ recordingDuration }}″</span>
             <svg v-else-if="isTranscribing" width="18" height="18" viewBox="0 0 18 18" fill="none" class="spinning">
               <circle cx="9" cy="9" r="6" stroke="currentColor" stroke-width="1.5" stroke-dasharray="20 8" stroke-linecap="round"/>
             </svg>
@@ -444,7 +451,7 @@
 </template>
 
 <script setup>
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, onUnmounted, ref, watch } from 'vue'
 import { registerServiceWorker, setBadgeCount, vibrateNotify } from './src/pwa'
 import { getStoredTheme, setStoredTheme, applyTheme, initTheme } from './src/theme'
 import { useMarkdown } from './src/composables/useMarkdown'
@@ -524,6 +531,7 @@ const agentSessions = ref([])
 const currentAgentSessionId = ref(null)
 const isRecording = ref(false)
 const isTranscribing = ref(false)
+const isOffline = ref(!navigator.onLine)
 const mediaRecorder = ref(null)
 const audioChunks = ref([])
 const recordingStartTime = ref(null)
@@ -1182,7 +1190,7 @@ async function transcribeAudio() {
     })
     if (res.ok) {
       const data = await res.json()
-      if (data.text) {
+      if (data.text && data.text.trim()) {
         agentComposer.value += data.text.trim()
         nextTick(() => {
           if (agentComposerRef.value) {
@@ -1191,9 +1199,17 @@ async function transcribeAudio() {
             agentComposerRef.value.focus()
           }
         })
+      } else {
+        showToast('未检测到语音，请重试', 'warning')
       }
+    } else {
+      const err = await res.json().catch(() => ({}))
+      showToast(err.detail || `转写失败 (${res.status})`, 'error')
     }
-  } catch (e) { console.error('转写请求失败:', e) }
+  } catch (e) {
+    console.error('转写请求失败:', e)
+    showToast('网络错误，转写失败', 'error')
+  }
   finally { isTranscribing.value = false; recordingDuration.value = 0 }
 }
 
@@ -1256,12 +1272,20 @@ onMounted(async () => {
   updateTime(); timeInterval = setInterval(updateTime, 60000)
   initTheme(); theme.value = getStoredTheme()
   registerServiceWorker()
+  window.addEventListener('online', () => { isOffline.value = false })
+  window.addEventListener('offline', () => { isOffline.value = true })
   if (query.get('token')) localStorage.setItem('openchat-mobile-token', query.get('token'))
   if (token.value) {
     try { await bootstrap() }
     catch (e) { authError.value = e.message || '恢复登录失败' }
   }
   ready.value = true
+})
+
+onUnmounted(() => {
+  clearInterval(timeInterval); timeInterval = null
+  window.removeEventListener('online', () => { isOffline.value = false })
+  window.removeEventListener('offline', () => { isOffline.value = true })
 })
 
 onBeforeUnmount(() => {
@@ -1326,7 +1350,18 @@ pre, code { font-family: "Cascadia Code", Consolas, monospace; }
   --error: #DC2626; --green: #059669;
   min-height: 100vh; max-width: 100%; background: var(--bg);
 }
+[data-theme="dark"] .app-shell {
+  --bg: #0f172a; --surface: #1E293B; --accent: #3B82F6; --accent-light: #1E3A5F; --accent-mid: #1E3A5F;
+  --text-primary: #F1F5F9; --text-secondary: #94A3B8; --text-muted: #64748B;
+  --border: #334155; --error: #EF4444; --green: #10B981;
+  --warn-bg: #1C1400; --warn-text: #FCD34D; --warn-border: #713F12;
+}
 .skeleton-root { min-height: 100vh; background: var(--surface); }
+.offline-banner {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 6px 12px; background: var(--warn-bg); color: var(--warn-text);
+  font-size: 12px; font-weight: 500; border-bottom: 1px solid var(--warn-border);
+}
 .page-list, .page-chat, .page-approvals { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 .agent-chat-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
 .agent-sidebar {
@@ -1476,6 +1511,7 @@ pre, code { font-family: "Cascadia Code", Consolas, monospace; }
 .btn-voice { width: 40px; height: 40px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; color: var(--text-secondary); flex-shrink: 0; transition: all 0.2s; }
 .btn-voice:active:not(:disabled) { background: var(--accent-light); }
 .btn-voice.recording { background: var(--error); border-color: var(--error); color: var(--surface); }
+.recording-count { font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; color: inherit; }
 .recording-icon { animation: recording-pulse 1s ease-in-out infinite; }
 @keyframes recording-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 .approvals-section { flex: 1; overflow-y: auto; min-height: 0; }

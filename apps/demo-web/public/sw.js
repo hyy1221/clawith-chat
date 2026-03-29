@@ -3,14 +3,87 @@
  *
  * Handles:
  * - Push notifications from Web Push API
+ * - Offline caching via Workbox (CDN import)
  * - Background sync for offline message queuing
- * - Caching strategies (via Workbox in generated sw.js)
  *
- * Note: vite-plugin-pwa injects the Workbox runtimeCaching rules
- * via importScripts('/sw.js') — this file only adds custom push handling.
+ * Workbox is loaded from CDN to enable runtime caching with injectManifest strategy.
  */
 
-// ─── Push Notification Handler ───────────────────────────────────────────────
+// ─── Workbox CDN Import ─────────────────────────────────────────────────────────
+importScripts('https://storage.googleapis.com/workbox-cdn/releases/7.3.0/workbox-sw.js')
+
+if (workbox) {
+  // ── Cache Strategies ─────────────────────────────────────────────────────────
+
+  // NetworkFirst for API calls — falls back to cache when offline.
+  workbox.routing.registerRoute(
+    ({ url }) => url.pathname.startsWith('/api/'),
+    new workbox.strategies.NetworkFirst({
+      cacheName: 'api-cache',
+      networkTimeoutSeconds: 8,
+      plugins: [
+        new workbox.expiration.ExpirationPlugin({
+          maxEntries: 100,
+          maxAgeSeconds: 60 * 60, // 1 hour
+        }),
+      ],
+    })
+  )
+
+  // CacheFirst for static assets (JS, CSS, fonts).
+  workbox.routing.registerRoute(
+    ({ request }) =>
+      request.destination === 'script' ||
+      request.destination === 'style' ||
+      request.destination === 'font',
+    new workbox.strategies.CacheFirst({
+      cacheName: 'static-cache',
+      plugins: [
+        new workbox.expiration.ExpirationPlugin({
+          maxEntries: 60,
+          maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
+        }),
+      ],
+    })
+  )
+
+  // CacheFirst for images.
+  workbox.routing.registerRoute(
+    ({ request }) => request.destination === 'image',
+    new workbox.strategies.CacheFirst({
+      cacheName: 'image-cache',
+      plugins: [
+        new workbox.expiration.ExpirationPlugin({
+          maxEntries: 50,
+          maxAgeSeconds: 7 * 24 * 60 * 60, // 7 days
+        }),
+      ],
+    })
+  )
+
+  // StaleWhileRevalidate for HTML navigation requests.
+  workbox.routing.registerRoute(
+    ({ request }) => request.mode === 'navigate',
+    new workbox.strategies.StaleWhileRevalidate({
+      cacheName: 'pages-cache',
+      plugins: [
+        new workbox.expiration.ExpirationPlugin({
+          maxEntries: 20,
+          maxAgeSeconds: 24 * 60 * 60, // 24 hours
+        }),
+      ],
+    })
+  )
+
+  // ── Precache (built assets from Vite PWA plugin) ─────────────────────────────
+  workbox.precaching.precacheAndRoute(self.__WB_MANIFEST || [])
+
+  // Clean old caches on activate
+  workbox.core.clientsClaim()
+  workbox.core.skipWaiting()
+}
+
+// ─── Push Notification Handler ─────────────────────────────────────────────────
 
 self.addEventListener('push', (event) => {
   if (!event.data) return
@@ -30,7 +103,7 @@ self.addEventListener('push', (event) => {
     badge,
     tag,
     vibrate: [100, 50, 100],
-   renotify: true,
+    renotify: true,
     requireInteraction: true,
     data: extra,
     actions: [
@@ -44,7 +117,7 @@ self.addEventListener('push', (event) => {
   )
 })
 
-// ─── Notification Click Handler ──────────────────────────────────────────────
+// ─── Notification Click Handler ────────────────────────────────────────────────
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close()
@@ -52,10 +125,8 @@ self.addEventListener('notificationclick', (event) => {
   const { approval_id, agent_id } = event.notification.data || {}
 
   if (event.action === 'approve' || event.action === 'reject') {
-    // Open app and navigate to approval detail
     event.waitUntil(
       self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-        // If app is already open, focus it
         for (const client of clientList) {
           if (client.url.includes('openchat') && 'focus' in client) {
             client.focus()
@@ -68,25 +139,19 @@ self.addEventListener('notificationclick', (event) => {
             return
           }
         }
-        // Otherwise open new window
-        const url = approval_id
-          ? `/?approvalId=${approval_id}`
-          : '/'
+        const url = approval_id ? `/?approvalId=${approval_id}` : '/'
         return self.clients.openWindow(url)
       })
     )
   } else {
-    // Default click: open app
-    event.waitUntil(
-      self.clients.openWindow('/')
-    )
+    event.waitUntil(self.clients.openWindow('/'))
   }
 })
 
-// ─── Message Handler (from main app) ─────────────────────────────────────────
+// ─── Message Handler (from main app) ───────────────────────────────────────────
 
 self.addEventListener('message', (event) => {
-  const { type, ...data } = event.data || {}
+  const { type } = event.data || {}
 
   if (type === 'skipWaiting') {
     self.skipWaiting()

@@ -11,7 +11,45 @@ export default defineConfig({
       srcDir: 'public',
       filename: 'sw.js',
       registerType: 'autoUpdate',
-      manifest: false, // use public/manifest.json
+      manifest: {
+        name: 'OpenChat 移动工作台',
+        short_name: 'OpenChat',
+        description: '数字员工协作平台',
+        theme_color: '#0ea5e9',
+        background_color: '#0f172a',
+        display: 'standalone',
+        orientation: 'portrait',
+        scope: '/',
+        start_url: '/',
+        icons: [
+          {
+            src: '/icon-192.svg',
+            sizes: '192x192',
+            type: 'image/svg+xml',
+            purpose: 'any',
+          },
+          {
+            src: '/icon-512.svg',
+            sizes: '512x512',
+            type: 'image/svg+xml',
+            purpose: 'any',
+          },
+          {
+            src: '/icon-192.svg',
+            sizes: '192x192',
+            type: 'image/svg+xml',
+            purpose: 'maskable',
+          },
+        ],
+        shortcuts: [
+          {
+            name: '待审批',
+            short_name: '审批',
+            url: '/?tab=todo',
+            icons: [{ src: '/icon-192.svg', sizes: '192x192', type: 'image/svg+xml' }],
+          },
+        ],
+      },
       injectManifest: {
         globPatterns: ['**/*.{js,css,html,svg,woff2}'],
         globIgnores: ['**/node_modules/**'],
@@ -19,11 +57,7 @@ export default defineConfig({
       devOptions: {
         enabled: false,
       },
-      workbox: {
-        // fallback to generateSW-like caching via the injectManifest's swSrc
-        // Runtime caching is handled in public/sw.js via self.addEventListener('fetch')
-        // For API caching, add rules here when switching back to generateSW
-      },
+      workbox: {},
     }),
   ],
   server: {
