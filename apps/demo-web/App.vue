@@ -953,6 +953,7 @@
 
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { registerServiceWorker, setBadgeCount, vibrateNotify } from './src/pwa'
 
 const query = new URLSearchParams(window.location.search)
 const runtime = window.__OPENCHAT_CONFIG__ || {}
@@ -1236,6 +1237,9 @@ const teamAgentCountMap = computed(() => {
 })
 const teamAgentCount = computed(() => currentTeam.value?.agents?.length || 0)
 const pendingCount = computed(() => approvals.value.filter((a) => a.status === 'pending').length)
+
+// Sync App Badge with pending approval count
+watch(pendingCount, (count) => { setBadgeCount(count) }, { immediate: true })
 const teamPendingCount = computed(() => {
   if (!currentTeam.value) return 0
   return approvals.value.filter((a) => a.status === 'pending' && currentTeamAgents.value.has(a.agent_id)).length
@@ -1569,6 +1573,8 @@ function handleUserWsMessage(msg) {
     // Show a toast-like notification
     const toName = msg.approver_name ? `发给 ${msg.approver_name}` : '待审批'
     showToast(`[${msg.agent_name}] ${msg.action_type} — ${toName}`, 'warning')
+    // Haptic feedback for new approval notification
+    vibrateNotify()
   } else if (msg.type === 'approval_resolved') {
     approvals.value = approvals.value.map(a =>
       a.id === msg.approval_id ? { ...a, status: msg.status, resolved_at: msg.resolved_at } : a
@@ -1949,6 +1955,9 @@ watch(approvalId, syncUrl)
 onMounted(async () => {
   updateTime()
   timeInterval = setInterval(updateTime, 60000)
+
+  // Register Service Worker for PWA (offline, push, badge)
+  registerServiceWorker()
 
   if (query.get('token')) localStorage.setItem('openchat-mobile-token', query.get('token'))
   if (token.value) {
