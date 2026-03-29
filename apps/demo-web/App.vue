@@ -1,15 +1,9 @@
 <template>
   <main class="app-shell">
 
-    <!-- Loading -->
-    <div v-if="!ready" class="loading">
-      <div class="loading-icon">
-        <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
-          <rect width="44" height="44" rx="10" fill="var(--accent)"/>
-          <path d="M13 22h18M22 13v18" stroke="var(--surface)" stroke-width="2.5" stroke-linecap="round"/>
-        </svg>
-      </div>
-      <span>OpenChat</span>
+    <!-- Loading Skeleton -->
+    <div v-if="!ready" class="skeleton-root">
+      <SkeletonLoader />
     </div>
 
     <!-- Auth -->
@@ -81,6 +75,20 @@
           </div>
         </div>
         <div class="user-menu-divider"></div>
+        <button class="user-menu-btn" @click="toggleTheme">
+          <svg v-if="theme === 'dark'" width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M14 10A6 6 0 116 2a5 5 0 008 8z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <svg v-else-if="theme === 'light'" width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <circle cx="8" cy="8" r="3" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M11.54 4.46l1.41-1.41M3.05 12.95l1.41-1.41" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <svg v-else width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M8 5v6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          {{ theme === 'dark' ? '深色' : theme === 'light' ? '浅色' : '跟随系统' }}
+        </button>
         <button class="user-menu-btn logout" @click="logout">退出登录</button>
       </div>
       <div v-if="showUserMenu" class="user-menu-overlay" @click="showUserMenu = false"></div>
@@ -954,6 +962,8 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { registerServiceWorker, setBadgeCount, vibrateNotify } from './src/pwa'
+import { getStoredTheme, setStoredTheme, applyTheme, initTheme } from './src/theme'
+import SkeletonLoader from './src/components/SkeletonLoader.vue'
 
 const query = new URLSearchParams(window.location.search)
 const runtime = window.__OPENCHAT_CONFIG__ || {}
@@ -979,6 +989,7 @@ const searchKeyword = ref('')
 const tab = ref('chat')
 const approvalId = ref(query.get('approvalId') || '')
 const showUserMenu = ref(false)
+const theme = ref(getStoredTheme())
 const listTab = ref('chat')
 
 // Teams
@@ -1956,6 +1967,10 @@ onMounted(async () => {
   updateTime()
   timeInterval = setInterval(updateTime, 60000)
 
+  // Initialize theme (system preference or stored)
+  initTheme()
+  theme.value = getStoredTheme()
+
   // Register Service Worker for PWA (offline, push, badge)
   registerServiceWorker()
 
@@ -2105,7 +2120,14 @@ function logout() {
   showUserMenu.value = false
 }
 
-async function bootstrap() {
+function toggleTheme() {
+  const options: Array<'light' | 'dark' | 'system'> = ['light', 'dark', 'system']
+  const currentIdx = options.indexOf(theme.value)
+  theme.value = options[(currentIdx + 1) % options.length]
+  setStoredTheme(theme.value)
+  applyTheme(theme.value)
+  showUserMenu.value = false
+}
   currentUser.value = await request('/api/auth/me')
   await afterAuth()
 }
@@ -2405,7 +2427,11 @@ pre, code { font-family: "Cascadia Code", Consolas, monospace; }
   background: var(--bg);
 }
 
-/* Loading */
+/* Loading / Skeleton */
+.skeleton-root {
+  min-height: 100vh;
+  background: var(--oc-bg-primary, var(--bg));
+}
 .loading {
   height: 100vh;
   display: flex;
