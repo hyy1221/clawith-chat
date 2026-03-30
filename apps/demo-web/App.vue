@@ -1174,14 +1174,30 @@ async function startRecording() {
     recordingStartTime.value = Date.now(); recordingDuration.value = 0
     recordingTimer.value = setInterval(() => { recordingDuration.value = Math.floor((Date.now() - recordingStartTime.value) / 1000) }, 1000)
     mediaRecorder.value.start(); isRecording.value = true
-  } catch (e) { console.error('无法访问麦克风:', e); alert('请允许麦克风权限后重试') }
+  } catch (e) {
+    console.error('无法访问麦克风:', e)
+    const name = e?.name || ''
+    // 检测安全上下文：getUserMedia 仅在 HTTPS 或 localhost 可用
+    const isSecure = window.isSecureContext
+    if (!isSecure) {
+      showToast('语音功能需 HTTPS 环境，请从手机浏览器打开本页面', 'warning')
+    } else if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
+      showToast('请在浏览器地址栏点击麦克风图标允许权限', 'warning')
+    } else if (name === 'NotFoundError' || name === 'DevicesNotFoundError') {
+      showToast('未检测到麦克风设备', 'error')
+    } else if (name === 'NotReadableError' || name === 'TrackStartError') {
+      showToast('麦克风被其他程序占用', 'warning')
+    } else {
+      showToast('无法访问麦克风，请检查权限设置', 'error')
+    }
+  }
 }
 
 async function transcribeAudio() {
   if (audioChunks.value.length === 0) return
   isRecording.value = false; isTranscribing.value = true
   clearInterval(recordingTimer.value); recordingTimer.value = null
-  const blob = new Blob(audioChunks.value, { type: audioChunks.value[0]?.type || 'audio/webm' })
+  const blob = new Blob(audioChunks.value, { type: 'audio/webm' })
   audioChunks.value = []
   const formData = new FormData(); formData.append('file', blob, `voice_${Date.now()}.webm`)
   try {
